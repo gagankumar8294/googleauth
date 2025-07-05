@@ -1,4 +1,8 @@
 import { getDB } from "../../config/mongo.js";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = 'zj8fN3lq1v4WySX3cFKeddcy8piHz8dt';
+const JWT_EXPIRES_IN = '1d';
 
 export default class userController {
   async signUp(req, res) {
@@ -54,8 +58,23 @@ export default class userController {
         });
       }
 
+      // ✅ Generate JWT Token
+      const token = jwt.sign(
+        {
+          id: user._id,
+          email: user.email,
+        },
+        JWT_SECRET,
+        {
+          expiresIn: JWT_EXPIRES_IN,
+        }
+      );
+
+
       res.status(200).json({
         message: 'Sign in successful.',
+
+        token,
         user: {
           name: user.name,
           email: user.email,
