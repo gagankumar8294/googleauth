@@ -5,6 +5,7 @@ const JWT_SECRET = 'zj8fN3lq1v4WySX3cFKeddcy8piHz8dt';
 const JWT_EXPIRES_IN = '1d';
 
 export default class userController {
+  
   async signUp(req, res) {
     const data = req.body;
     const { email } = data;
@@ -70,11 +71,16 @@ export default class userController {
         }
       );
 
+      await db.collection('users').updateOne(
+        { _id: user._id },
+        { $set: { token: token } }
+      );
 
+      res.cookie('auth_token', token, { httpOnly: true, maxAge: 3600000 })
       res.status(200).json({
         message: 'Sign in successful.',
-
-        token,
+        success: true,
+        token: token,
         user: {
           name: user.name,
           email: user.email,
@@ -83,7 +89,7 @@ export default class userController {
       });
     } catch (error) {
       console.error('Error during sign in:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ success: false, error: 'Internal server error' });
     }
   }
 }
